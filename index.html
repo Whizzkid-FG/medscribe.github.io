@@ -1,0 +1,2196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedScript Pro - AI Medical Documentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * { font-family: 'Inter', sans-serif; }
+        
+        /* Custom CSS Variables for Dark Mode */
+        :root {
+            --primary-blue: #2563eb;
+            --primary-blue-dark: #1d4ed8;
+            --accent-green: #059669;
+            --accent-purple: #7c3aed;
+            --background-light: #f8fafc;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Smooth animations */
+        * { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Glassmorphism effects */
+        .glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Modern gradient backgrounds */
+        .gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .gradient-medical {
+            background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+        }
+        
+        .gradient-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        /* Card hover effects */
+        .card-hover {
+            transform: translateY(0);
+            box-shadow: var(--card-shadow);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--card-shadow-hover);
+        }
+        
+        /* Recording pulse animation */
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
+        
+        .pulse-recording {
+            animation: pulse-soft 2s ease-in-out infinite;
+        }
+        
+        /* Voice wave animation */
+        @keyframes voice-wave {
+            0%, 100% { height: 4px; }
+            50% { height: 20px; }
+        }
+        
+        .voice-bar {
+            width: 3px;
+            background: linear-gradient(to top, #3b82f6, #1d4ed8);
+            border-radius: 2px;
+            animation: voice-wave 1.5s ease-in-out infinite;
+        }
+        
+        .voice-bar:nth-child(1) { animation-delay: 0s; }
+        .voice-bar:nth-child(2) { animation-delay: 0.1s; }
+        .voice-bar:nth-child(3) { animation-delay: 0.2s; }
+        .voice-bar:nth-child(4) { animation-delay: 0.3s; }
+        .voice-bar:nth-child(5) { animation-delay: 0.4s; }
+        
+        /* SOAP section colors */
+        .soap-subjective { border-left: 4px solid #3b82f6; background: linear-gradient(135deg, #dbeafe 0%, #f0f9ff 100%); }
+        .soap-objective { border-left: 4px solid #059669; background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%); }
+        .soap-assessment { border-left: 4px solid #d97706; background: linear-gradient(135deg, #fed7aa 0%, #fef3c7 100%); }
+        .soap-plan { border-left: 4px solid #dc2626; background: linear-gradient(135deg, #fecaca 0%, #fee2e2 100%); }
+        
+        /* Enhanced editable fields */
+        .editable-field {
+            border: 2px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            min-height: 60px;
+            font-size: 14px;
+            line-height: 1.6;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .editable-field:hover {
+            border-color: #9ca3af;
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .editable-field:focus {
+            outline: none;
+            border-style: solid;
+            border-color: #3b82f6;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* Status indicators */
+        .status-indicator {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-recording {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #dc2626;
+        }
+        
+        .status-ready {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #059669;
+        }
+        
+        .status-processing {
+            background: linear-gradient(135deg, #ddd6fe 0%, #c7d2fe 100%);
+            color: #7c3aed;
+        }
+        
+        /* Floating elements */
+        .float-up {
+            animation: float-up 0.5s ease-out;
+        }
+        
+        @keyframes float-up {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Modern buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(5, 150, 105, 0.4);
+        }
+        
+        /* Progress bars */
+        .progress-bar {
+            height: 8px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+            border-radius: 8px;
+            transition: width 0.8s ease;
+            position: relative;
+        }
+        
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* Responsive design improvements */
+        @media (max-width: 768px) {
+            .mobile-stack { flex-direction: column; }
+            .mobile-hide { display: none; }
+            .mobile-full { width: 100%; }
+        }
+        
+        /* Dark mode support */
+        .dark .glass {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Notification improvements */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        /* Loading animations */
+        .loading-dots::after {
+            content: '';
+            animation: loading-dots 1.5s infinite;
+        }
+        
+        @keyframes loading-dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <!-- Modern Header with Glassmorphism -->
+    <header class="sticky top-0 z-50 glass border-b border-white/20">
+        <div class="gradient-medical">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <!-- Logo & Brand -->
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-white/20 backdrop-blur-lg rounded-2xl flex items-center justify-center">
+                            <i class="fas fa-brain text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-white">MedScript Pro</h1>
+                            <p class="text-white/80 text-sm">AI-Powered Medical Documentation</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Header Actions -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Session Info -->
+                        <div class="hidden lg:flex items-center space-x-6 text-white/90 text-sm">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-clock"></i>
+                                <span id="sessionTime">00:00</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-id-badge"></i>
+                                <span id="sessionId">Session #2024-001</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Indicator -->
+                        <div id="statusIndicator" class="status-ready" title="System Status: Ready to record">
+                            <i class="fas fa-circle text-xs"></i>
+                            <span>Ready</span>
+                        </div>
+                        
+                        <!-- Settings Button -->
+                        <button id="settingsBtn" class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30" title="Application Settings">
+                            <i class="fas fa-cog text-white"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content with Better Layout -->
+    <main class="max-w-7xl mx-auto px-6 py-8">
+        <!-- Quick Actions Bar -->
+        <div class="glass rounded-2xl p-6 mb-8 float-up">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex flex-wrap items-center gap-3">
+                    <button id="newSessionBtn" class="btn-primary flex items-center gap-2">
+                        <i class="fas fa-plus"></i>
+                        New Session
+                    </button>
+                    <button id="templatesBtn" class="bg-white/80 hover:bg-white text-gray-700 px-4 py-2 rounded-lg font-medium border border-gray-200">
+                        <i class="fas fa-file-import mr-2"></i>Templates
+                    </button>
+                    <button id="aiAssistBtn" class="bg-white/80 hover:bg-white text-gray-700 px-4 py-2 rounded-lg font-medium border border-gray-200">
+                        <i class="fas fa-magic mr-2"></i>AI Assist
+                    </button>
+                </div>
+                
+                <!-- Specialty Selector -->
+                <div class="flex items-center gap-3">
+                    <label class="text-sm font-medium text-gray-700">Specialty:</label>
+                    <select class="bg-white/90 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option>General Medicine</option>
+                        <option>Cardiology</option>
+                        <option>Pediatrics</option>
+                        <option>Emergency Medicine</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <!-- Recording Panel - Left Column -->
+            <div class="xl:col-span-1 space-y-6">
+                <!-- Voice Recording Card -->
+                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden card-hover">
+                    <div class="gradient-primary text-white p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold">Voice Recording</h3>
+                                <p class="text-white/80 text-sm">Click to start speaking</p>
+                            </div>
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-microphone text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <!-- Speaker Selection -->
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <button id="clinicianBtn" class="group p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border-2 border-transparent hover:border-blue-300 hover:from-blue-100 hover:to-blue-200">
+                                <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110">
+                                    <i class="fas fa-user-md text-white text-2xl"></i>
+                                </div>
+                                <div class="text-center">
+                                    <div class="font-semibold text-gray-900">Clinician</div>
+                                    <div class="text-xs text-gray-600">Click to speak</div>
+                                </div>
+                            </button>
+                            
+                            <button id="patientBtn" class="group p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl border-2 border-transparent hover:border-green-300 hover:from-green-100 hover:to-green-200">
+                                <div class="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110">
+                                    <i class="fas fa-user text-white text-2xl"></i>
+                                </div>
+                                <div class="text-center">
+                                    <div class="font-semibold text-gray-900">Patient</div>
+                                    <div class="text-xs text-gray-600">Click to speak</div>
+                                </div>
+                            </button>
+                        </div>
+                        
+                        <!-- Voice Visualization -->
+                        <div id="voiceViz" class="flex justify-center items-center h-16 mb-6 opacity-0">
+                            <div class="flex items-center space-x-1">
+                                <div class="voice-bar h-2"></div>
+                                <div class="voice-bar h-2"></div>
+                                <div class="voice-bar h-2"></div>
+                                <div class="voice-bar h-2"></div>
+                                <div class="voice-bar h-2"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Control Buttons -->
+                        <div class="flex justify-center space-x-3">
+                            <button id="pauseBtn" class="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-medium hidden">
+                                <i class="fas fa-pause mr-2"></i>Pause
+                            </button>
+                            <button id="stopBtn" class="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium hidden">
+                                <i class="fas fa-stop mr-2"></i>Stop
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Processing Panel -->
+                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden card-hover">
+                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-lg font-bold">AI Processing</h3>
+                                <p class="text-white/80 text-sm">GPT-4 Medical AI</p>
+                            </div>
+                            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-brain text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 space-y-4">
+                        <div class="bg-purple-50 border border-purple-200 rounded-xl p-4">
+                            <div class="flex items-center text-purple-800 mb-2">
+                                <i class="fas fa-shield-alt mr-2"></i>
+                                <span class="font-semibold">HIPAA Compliant</span>
+                            </div>
+                            <p class="text-sm text-purple-700">End-to-end encrypted medical AI processing</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Processing Quality</label>
+                            <select class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option>Standard (Recommended)</option>
+                                <option>High Quality (Detailed)</option>
+                                <option>Fast (Basic)</option>
+                            </select>
+                        </div>
+                        
+                        <button id="generateBtn" class="w-full btn-success flex items-center justify-center gap-2">
+                            <i class="fas fa-magic"></i>
+                            Generate SOAP Note
+                        </button>
+                        
+                        <!-- Progress Bar -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm text-gray-600">
+                                <span>SOAP Completion</span>
+                                <span id="progressPercent">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div id="progressFill" class="progress-fill w-0"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Live Transcript -->
+                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden card-hover">
+                    <div class="bg-gray-50 border-b border-gray-200 p-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-bold text-gray-900 flex items-center">
+                                <i class="fas fa-file-alt text-blue-500 mr-2"></i>
+                                Live Transcript
+                            </h3>
+                            <div class="flex space-x-2">
+                                <button class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-search text-xs"></i>
+                                </button>
+                                <button class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-download text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="transcriptArea" class="p-4 h-64 overflow-y-auto">
+                        <div class="text-center text-gray-500 py-12">
+                            <i class="fas fa-microphone-slash text-3xl mb-4 opacity-50"></i>
+                            <p class="text-sm">Start recording to see live transcript</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 border-t border-gray-200 p-3 text-xs text-gray-600">
+                        <span id="wordCount">0 words</span> • <span id="confidence">Confidence: --</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SOAP Note - Right Columns -->
+            <div class="xl:col-span-2">
+                <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                    <!-- SOAP Header -->
+                    <div class="gradient-medical text-white p-8">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h1 class="text-3xl font-bold mb-2">SOAP NOTE</h1>
+                                <div class="text-white/90 space-y-1">
+                                    <p id="currentDate">March 15, 2024</p>
+                                    <p>Session: <span id="sessionId">SOAP-2024-031501</span></p>
+                                </div>
+                            </div>
+                            <div class="text-right text-white/90">
+                                <p class="font-semibold">MedScript Pro</p>
+                                <p class="text-sm">AI-Generated Documentation</p>
+                                <div id="specialtyBadge" class="mt-2 px-3 py-1 bg-white/20 rounded-full text-xs">
+                                    Pediatrics
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Patient Information -->
+                    <div class="p-8 bg-gray-50 border-b border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-user-circle text-blue-500 mr-3"></i>
+                            Patient Information
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Patient Name</label>
+                                <div class="editable-field" contenteditable="true">John Smith</div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
+                                <div class="editable-field" contenteditable="true">01/15/1980</div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Medical Record #</label>
+                                <div class="editable-field" contenteditable="true">MRN-123456</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SOAP Sections -->
+                    <div class="p-8 space-y-8">
+                        <!-- Subjective -->
+                        <div class="soap-subjective rounded-2xl p-6">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                                <div class="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mr-4">
+                                    <i class="fas fa-comments text-white"></i>
+                                </div>
+                                SUBJECTIVE
+                                <button class="ml-auto w-8 h-8 bg-blue-100 hover:bg-blue-200 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-lightbulb text-blue-600"></i>
+                                </button>
+                            </h2>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                        Chief Complaint
+                                    </h4>
+                                    <div class="editable-field" contenteditable="true">Patient reports chest discomfort and shortness of breath...</div>
+                                    <div class="text-xs text-gray-500 mt-2">12 words</div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                        History of Present Illness
+                                    </h4>
+                                    <div class="editable-field" contenteditable="true">45-year-old male reports onset of substernal chest pressure 2 days ago...</div>
+                                    <div class="text-xs text-gray-500 mt-2">28 words</div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                        Review of Systems
+                                    </h4>
+                                    <div class="editable-field" contenteditable="true">Constitutional: Denies fever, chills, weight loss...</div>
+                                    <div class="text-xs text-gray-500 mt-2">15 words</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Objective -->
+                        <div class="soap-objective rounded-2xl p-6">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                                <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center mr-4">
+                                    <i class="fas fa-stethoscope text-white"></i>
+                                </div>
+                                OBJECTIVE
+                                <button class="ml-auto w-8 h-8 bg-green-100 hover:bg-green-200 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-lightbulb text-green-600"></i>
+                                </button>
+                            </h2>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                        Vital Signs
+                                    </h4>
+                                    <div class="editable-field" contenteditable="true">BP 145/92, HR 78, RR 16, O2 Sat 98%, Temp 98.4°F</div>
+                                    <div class="text-xs text-gray-500 mt-2">14 words</div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                        Physical Examination
+                                    </h4>
+                                    <div class="editable-field" contenteditable="true">General: Well-appearing male in no acute distress. Cardiovascular: Regular rate and rhythm, no murmurs. Respiratory: Clear to auscultation bilaterally.</div>
+                                    <div class="text-xs text-gray-500 mt-2">22 words</div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                        Diagnostic Results
+                                    </h4>
+                                    <div class="editable-field" contenteditable="true">ECG: Normal sinus rhythm, no acute changes. Chest X-ray: Clear lung fields.</div>
+                                    <div class="text-xs text-gray-500 mt-2">16 words</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Assessment -->
+                        <div class="soap-assessment rounded-2xl p-6">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                                <div class="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center mr-4">
+                                    <i class="fas fa-diagnoses text-white"></i>
+                                </div>
+                                ASSESSMENT
+                                <button class="ml-auto w-8 h-8 bg-orange-100 hover:bg-orange-200 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-lightbulb text-orange-600"></i>
+                                </button>
+                            </h2>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                                        Primary Diagnosis
+                                    </h4>
+                                    <div class="editable-field" contenteditable="true">R07.89 - Other chest pain, likely atypical chest pain vs stable angina</div>
+                                    <div class="text-xs text-gray-500 mt-2">14 words</div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                                        Differential Diagnoses
+                                    </h4>
+                                    <div class="editable-field" contenteditable="true">1. Coronary artery disease 2. Gastroesophageal reflux disease 3. Musculoskeletal chest pain 4. Anxiety</div>
+                                    <div class="text-xs text-gray-500 mt-2">15 words</div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                                        Clinical Impression
+                                    </h4>
+                                    <div class="editable-field" contenteditable="true">45-year-old male with cardiovascular risk factors presenting with atypical chest pain. Low-to-intermediate risk for ACS based on presentation and normal ECG.</div>
+                                    <div class="text-xs text-gray-500 mt-2">24 words</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Plan -->
+                        <div class="soap-plan rounded-2xl p-6">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                                <div class="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center mr-4">
+                                    <i class="fas fa-clipboard-list text-white"></i>
+                                </div>
+                                PLAN
+                                <button class="ml-auto w-8 h-8 bg-red-100 hover:bg-red-200 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-lightbulb text-red-600"></i>
+                                </button>
+                            </h2>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                        Medications
+                                    </h4>
+                                    <div class="editable-field" contenteditable="true">1. Continue Lisinopril 10mg daily 2. Atorvastatin 40mg daily 3. Aspirin 81mg daily for cardiovascular protection 4. Consider omeprazole 20mg daily for possible GERD</div>
+                                    <div class="text-xs text-gray-500 mt-2">26 words</div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                        Procedures & Testing
+                                    </h4>
+                                    <div class="editable-field" contenteditable="true">1. Outpatient stress echocardiogram within 2 weeks 2. Basic metabolic panel and lipid panel 3. Consider CT coronary angiogram if stress test abnormal</div>
+                                    <div class="text-xs text-gray-500 mt-2">25 words</div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                        Follow-up
+                                    </h4>
+                                    <div class="editable-field" contenteditable="true">Return to clinic in 1-2 weeks or sooner if symptoms worsen. Cardiology referral if stress test positive. Emergency department if severe chest pain.</div>
+                                    <div class="text-xs text-gray-500 mt-2">25 words</div>
+                                </div>
+                                
+                                <div>
+                                    <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                        <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                        Patient Education
+                                    </h4>
+                                    <div class="editable-field" contenteditable="true">Discussed warning signs of heart attack. Lifestyle modifications including heart-healthy diet, regular exercise. Importance of medication compliance and follow-up.</div>
+                                    <div class="text-xs text-gray-500 mt-2">22 words</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SOAP Footer with Actions -->
+                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200 p-8">
+                        <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
+                            <!-- Document Info -->
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <p class="flex items-center">
+                                    <i class="fas fa-robot mr-2 text-purple-500"></i>
+                                    AI-Generated SOAP Note
+                                </p>
+                                <p class="flex items-center">
+                                    <i class="fas fa-clock mr-2 text-blue-500"></i>
+                                    Generated on <span id="generatedTime">March 15, 2024 at 2:30 PM</span>
+                                </p>
+                                <p class="flex items-center">
+                                    <i class="fas fa-shield-alt mr-2 text-green-500"></i>
+                                    HIPAA Compliant • Encrypted
+                                </p>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="flex flex-wrap gap-3">
+                                <button class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium flex items-center gap-2 shadow-lg hover:shadow-xl">
+                                    <i class="fas fa-check-circle"></i>
+                                    Validate
+                                </button>
+                                <button class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium flex items-center gap-2 shadow-lg hover:shadow-xl">
+                                    <i class="fas fa-print"></i>
+                                    Print
+                                </button>
+                                <button class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium flex items-center gap-2 shadow-lg hover:shadow-xl">
+                                    <i class="fas fa-download"></i>
+                                    Export
+                                </button>
+                                <button class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-medium flex items-center gap-2 shadow-lg hover:shadow-xl">
+                                    <i class="fas fa-share"></i>
+                                    Share
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Enhanced Notification System -->
+    <div id="notification" class="notification bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 min-w-96">
+        <div class="flex items-start space-x-4">
+            <div id="notificationIcon" class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <!-- Icon will be inserted here -->
+            </div>
+            <div class="flex-1">
+                <h4 id="notificationTitle" class="font-bold text-gray-900 mb-1"></h4>
+                <p id="notificationMessage" class="text-sm text-gray-600"></p>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Floating Emergency Stop -->
+    <button id="emergencyStop" class="fixed bottom-8 right-8 w-16 h-16 bg-red-500 hover:bg-red-600 text-white rounded-2xl shadow-2xl flex items-center justify-center z-50 hover:scale-110">
+        <i class="fas fa-stop text-xl"></i>
+    </button>
+
+    <!-- Templates Modal -->
+    <div id="templatesModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-96 overflow-hidden">
+                <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-file-medical"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold">SOAP Templates</h3>
+                                <p class="text-green-100 text-sm">Quick start templates for common medical scenarios</p>
+                            </div>
+                        </div>
+                        <button id="closeTemplatesModal" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="templatesGrid">
+                        <!-- Templates will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold">Application Settings</h3>
+                                <p class="text-blue-100 text-sm">Configure MedScript Pro preferences</p>
+                            </div>
+                        </div>
+                        <button id="closeSettingsModal" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-6 space-y-6">
+                    <!-- Voice Recognition Settings -->
+                    <div class="bg-gray-50 rounded-xl p-4">
+                        <h4 class="font-semibold text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-microphone text-blue-500 mr-2"></i>
+                            Voice Recognition
+                        </h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                                <select class="w-full p-3 border border-gray-300 rounded-lg">
+                                    <option value="en-US">English (US)</option>
+                                    <option value="en-GB">English (UK)</option>
+                                    <option value="es-ES">Spanish</option>
+                                    <option value="fr-FR">French</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Confidence Threshold: <span id="confidenceValue">70%</span>
+                                </label>
+                                <input type="range" min="50" max="95" value="70" class="w-full" id="confidenceSlider">
+                                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                    <span>Less Strict</span>
+                                    <span>More Strict</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI Processing Settings -->
+                    <div class="bg-purple-50 rounded-xl p-4">
+                        <h4 class="font-semibold text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-brain text-purple-500 mr-2"></i>
+                            AI Processing
+                        </h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Default Quality Level</label>
+                                <select class="w-full p-3 border border-gray-300 rounded-lg">
+                                    <option value="fast">Fast (Basic)</option>
+                                    <option value="standard" selected>Standard (Recommended)</option>
+                                    <option value="high">High Quality (Detailed)</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Auto-generate SOAP on stop</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Privacy & Security -->
+                    <div class="bg-green-50 rounded-xl p-4">
+                        <h4 class="font-semibold text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-shield-alt text-green-500 mr-2"></i>
+                            Privacy & Security
+                        </h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Auto-save transcripts</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">End-to-end encryption</span>
+                                <span class="text-green-600 text-sm font-medium">
+                                    <i class="fas fa-lock mr-1"></i>Enabled
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 border-t border-gray-200 p-6 flex justify-end space-x-3">
+                    <button id="resetSettings" class="px-4 py-2 text-gray-600 hover:text-gray-800">Reset to Defaults</button>
+                    <button id="saveSettings" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Suggestions Modal -->
+    <div id="aiModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-96 overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold">AI Suggestions</h3>
+                                <p class="text-purple-100 text-sm">Improve your SOAP note with AI recommendations</p>
+                            </div>
+                        </div>
+                        <button id="closeAiModal" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-6 space-y-4 max-h-80 overflow-y-auto">
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 cursor-pointer hover:bg-blue-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold text-blue-900">Chief Complaint Enhancement</h4>
+                                <p class="text-sm text-blue-700 mt-1">Add onset duration and severity details</p>
+                            </div>
+                            <i class="fas fa-arrow-right text-blue-600"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-green-50 border border-green-200 rounded-xl p-4 cursor-pointer hover:bg-green-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold text-green-900">Physical Exam</h4>
+                                <p class="text-sm text-green-700 mt-1">Include systematic examination by body systems</p>
+                            </div>
+                            <i class="fas fa-arrow-right text-green-600"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-orange-50 border border-orange-200 rounded-xl p-4 cursor-pointer hover:bg-orange-100">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-semibold text-orange-900">Assessment Improvement</h4>
+                                <p class="text-sm text-orange-700 mt-1">Consider adding ICD-10 codes and clinical reasoning</p>
+                            </div>
+                            <i class="fas fa-arrow-right text-orange-600"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Real Speech Recognition -->
+    <script>
+        // MedScript Pro with Real Speech Recognition and AI Integration
+        class MedScriptPro {
+            constructor() {
+                this.recognition = null;
+                this.isRecording = false;
+                this.currentSpeaker = null;
+                this.transcript = [];
+                this.sessionStartTime = new Date();
+                this.confidenceThreshold = 0.7;
+                
+                // AI Configuration
+                this.aiConfig = {
+                    primary: {
+                        provider: 'openai',
+                        apiKey: 'your-openai-api-key-here', // Replace with actual key
+                        model: 'gpt-4',
+                        baseURL: 'https://api.openai.com/v1/chat/completions'
+                    },
+                    fallback: {
+                        provider: 'anthropic',
+                        apiKey: 'your-anthropic-api-key-here', // Replace with actual key
+                        model: 'claude-3-sonnet-20240229',
+                        baseURL: 'https://api.anthropic.com/v1/messages'
+                    },
+                    settings: {
+                        temperature: 0.3,
+                        maxTokens: 4000,
+                        timeout: 30000
+                    }
+                };
+                
+                this.initializeApp();
+            }
+            
+            initializeApp() {
+                this.setupEventListeners();
+                this.initializeSpeechRecognition();
+                this.startSessionTimer();
+                this.updateCurrentDate();
+                this.showWelcomeNotification();
+                
+                // Initialize specialty to match default dropdown value
+                const specialtySelect = document.getElementById('specialtySelect');
+                if (specialtySelect) {
+                    this.onSpecialtyChange(specialtySelect.value);
+                }
+            }
+            
+            setupEventListeners() {
+                document.getElementById('clinicianBtn').addEventListener('click', () => this.toggleRecording('Clinician'));
+                document.getElementById('patientBtn').addEventListener('click', () => this.toggleRecording('Patient'));
+                document.getElementById('pauseBtn').addEventListener('click', () => this.pauseRecording());
+                document.getElementById('stopBtn').addEventListener('click', () => this.stopRecording());
+                document.getElementById('generateBtn').addEventListener('click', () => this.generateSOAPNote());
+                document.getElementById('closeAiModal').addEventListener('click', () => this.hideAIModal());
+                
+                // Quick Action buttons
+                document.getElementById('newSessionBtn').addEventListener('click', () => this.startNewSession());
+                document.getElementById('templatesBtn').addEventListener('click', () => this.showTemplatesModal());
+                document.getElementById('aiAssistBtn').addEventListener('click', () => this.showAIModal());
+                
+                // Modal close buttons
+                document.getElementById('closeTemplatesModal').addEventListener('click', () => this.hideTemplatesModal());
+                
+                // Specialty selector
+                document.getElementById('specialtySelect').addEventListener('change', (e) => this.onSpecialtyChange(e.target.value));
+                
+                // Settings modal
+                document.getElementById('settingsBtn').addEventListener('click', () => this.showSettingsModal());
+                document.getElementById('closeSettingsModal').addEventListener('click', () => this.hideSettingsModal());
+                document.getElementById('saveSettings').addEventListener('click', () => this.saveSettings());
+                document.getElementById('resetSettings').addEventListener('click', () => this.resetSettings());
+                
+                // Settings controls
+                document.getElementById('confidenceSlider').addEventListener('input', (e) => {
+                    document.getElementById('confidenceValue').textContent = e.target.value + '%';
+                    this.confidenceThreshold = e.target.value / 100;
+                });
+                
+                // AI suggestion buttons
+                document.querySelectorAll('[class*="lightbulb"]').forEach(btn => {
+                    btn.addEventListener('click', () => this.showAIModal());
+                });
+            }
+            
+            initializeSpeechRecognition() {
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    this.recognition = new SpeechRecognition();
+                    
+                    this.recognition.continuous = true;
+                    this.recognition.interimResults = true;
+                    this.recognition.lang = 'en-US';
+                    this.recognition.maxAlternatives = 3;
+                    
+                    this.recognition.onstart = () => {
+                        this.isRecording = true;
+                        this.updateRecordingUI();
+                        this.showNotification('success', 'Recording Started', `Now recording ${this.currentSpeaker}`);
+                    };
+                    
+                    this.recognition.onresult = (event) => {
+                        this.processRecognitionResult(event);
+                    };
+                    
+                    this.recognition.onend = () => {
+                        if (this.isRecording && this.currentSpeaker) {
+                            // Restart recognition if we're still supposed to be recording
+                            setTimeout(() => {
+                                if (this.isRecording) {
+                                    this.recognition.start();
+                                }
+                            }, 100);
+                        }
+                    };
+                    
+                    this.recognition.onerror = (event) => {
+                        this.handleRecognitionError(event);
+                    };
+                } else {
+                    this.showNotification('error', 'Not Supported', 'Speech recognition not supported in this browser. Please use Chrome, Safari, or Edge.');
+                }
+            }
+            
+            toggleRecording(speaker) {
+                if (this.isRecording && this.currentSpeaker === speaker) {
+                    this.stopRecording();
+                } else {
+                    this.startRecording(speaker);
+                }
+            }
+            
+            startRecording(speaker) {
+                if (this.isRecording) {
+                    this.recognition.stop();
+                }
+                
+                this.currentSpeaker = speaker;
+                if (this.recognition) {
+                    this.recognition.start();
+                } else {
+                    this.showNotification('error', 'Speech Recognition Error', 'Speech recognition not available');
+                }
+            }
+            
+            pauseRecording() {
+                if (this.isRecording) {
+                    this.recognition.stop();
+                    this.isRecording = false;
+                    this.updateRecordingUI();
+                    this.showNotification('info', 'Recording Paused', 'Click a speaker to resume');
+                }
+            }
+            
+            stopRecording() {
+                this.isRecording = false;
+                this.currentSpeaker = null;
+                if (this.recognition) {
+                    this.recognition.stop();
+                }
+                this.updateRecordingUI();
+                this.showNotification('info', 'Recording Stopped', 'Ready to generate SOAP note');
+            }
+            
+            processRecognitionResult(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const result = event.results[i];
+                    const transcript = result[0].transcript;
+                    const confidence = result[0].confidence || 0;
+                    
+                    if (result.isFinal) {
+                        // Check for voice commands first
+                        if (this.processVoiceCommand(transcript)) {
+                            // Voice command was processed, don't add to transcript
+                            continue;
+                        }
+                        
+                        if (confidence >= this.confidenceThreshold) {
+                            finalTranscript += transcript;
+                            this.addToTranscript(this.currentSpeaker, transcript, confidence);
+                        }
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                
+                this.updateTranscriptDisplay(interimTranscript);
+            }
+            
+            processVoiceCommand(text) {
+                const command = text.toLowerCase().trim();
+                
+                // Define voice commands
+                const voiceCommands = {
+                    'switch to patient': () => {
+                        this.switchToSpeaker('Patient');
+                        return true;
+                    },
+                    'switch to clinician': () => {
+                        this.switchToSpeaker('Clinician');
+                        return true;
+                    },
+                    'switch to doctor': () => {
+                        this.switchToSpeaker('Clinician');
+                        return true;
+                    },
+                    'new paragraph': () => {
+                        this.addParagraphBreak();
+                        return true;
+                    },
+                    'paragraph break': () => {
+                        this.addParagraphBreak();
+                        return true;
+                    },
+                    'generate soap': () => {
+                        this.generateSOAPNote();
+                        return true;
+                    },
+                    'generate soap note': () => {
+                        this.generateSOAPNote();
+                        return true;
+                    },
+                    'pause recording': () => {
+                        this.pauseRecording();
+                        return true;
+                    },
+                    'stop recording': () => {
+                        this.stopRecording();
+                        return true;
+                    },
+                    'clear note': () => {
+                        this.clearSOAPNote();
+                        return true;
+                    }
+                };
+                
+                // Check if the command matches any voice commands
+                for (const [commandText, action] of Object.entries(voiceCommands)) {
+                    if (command.includes(commandText)) {
+                        action();
+                        this.showNotification('info', 'Voice Command', `Executed: "${commandText}"`);
+                        return true;
+                    }
+                }
+                
+                return false; // No command found
+            }
+            
+            switchToSpeaker(newSpeaker) {
+                if (this.currentSpeaker !== newSpeaker) {
+                    // Add a note about the speaker switch
+                    if (this.transcript.length > 0) {
+                        this.addToTranscript('System', `--- Switched to ${newSpeaker} ---`, 1.0);
+                    }
+                    
+                    // Stop current recognition
+                    if (this.recognition && this.isRecording) {
+                        this.recognition.stop();
+                    }
+                    
+                    // Start recording with new speaker
+                    this.startRecording(newSpeaker);
+                    
+                    this.showNotification('success', 'Speaker Switched', `Now recording for ${newSpeaker}`);
+                }
+            }
+            
+            addParagraphBreak() {
+                if (this.currentSpeaker && this.transcript.length > 0) {
+                    const lastEntry = this.transcript[this.transcript.length - 1];
+                    if (lastEntry.speaker === this.currentSpeaker) {
+                        lastEntry.text += '\n\n[Paragraph Break]';
+                        this.updateTranscriptDisplay();
+                        this.showNotification('info', 'Paragraph Break', 'Added line break to transcript');
+                    }
+                }
+            }
+            
+            clearSOAPNote() {
+                if (confirm('Clear the current SOAP note? This action cannot be undone.')) {
+                    // Clear all editable fields
+                    document.querySelectorAll('[contenteditable="true"]').forEach(field => {
+                        if (field.id === 'patientName') field.textContent = 'Patient Name';
+                        else if (field.id === 'patientDOB') field.textContent = 'MM/DD/YYYY';
+                        else if (field.id === 'patientMRN') field.textContent = 'MRN';
+                        else field.textContent = field.getAttribute('data-placeholder') || 'Content will appear here...';
+                    });
+                    
+                    this.showNotification('success', 'SOAP Note Cleared', 'Ready for new conversation');
+                }
+            }
+            
+            addToTranscript(speaker, text, confidence) {
+                const entry = {
+                    speaker: speaker,
+                    text: text.trim(),
+                    timestamp: new Date().toISOString(),
+                    confidence: confidence
+                };
+                
+                this.transcript.push(entry);
+                this.updateTranscriptDisplay();
+                this.updateWordCount();
+                this.updateProgress();
+            }
+            
+            updateTranscriptDisplay(interimText = '') {
+                const transcriptArea = document.getElementById('transcriptArea');
+                let html = '';
+                
+                // Clear the placeholder if we have transcript entries
+                if (this.transcript.length > 0 && transcriptArea.querySelector('.text-center')) {
+                    transcriptArea.innerHTML = '';
+                }
+                
+                this.transcript.forEach((entry) => {
+                    let speakerClass, speakerTextClass, iconClass;
+                    
+                    // Handle different speaker types
+                    if (entry.speaker === 'System') {
+                        speakerClass = 'border-gray-400 bg-gray-50';
+                        speakerTextClass = 'text-gray-800';
+                        iconClass = 'fas fa-cog text-gray-600';
+                    } else if (entry.speaker === 'Clinician') {
+                        speakerClass = 'border-blue-500 bg-blue-50';
+                        speakerTextClass = 'text-blue-900';
+                        iconClass = 'fas fa-user-md text-blue-600';
+                    } else {
+                        speakerClass = 'border-green-500 bg-green-50';
+                        speakerTextClass = 'text-green-900';
+                        iconClass = 'fas fa-user text-green-600';
+                    }
+                    
+                    const confidenceIndicator = entry.speaker !== 'System' ? this.getConfidenceIndicator(entry.confidence) : '';
+                    
+                    html += `
+                        <div class="border-l-4 ${speakerClass} p-3 rounded-r-lg mb-3 transition-all duration-300">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <i class="${iconClass} text-sm"></i>
+                                    <span class="font-semibold text-sm ${speakerTextClass}">${entry.speaker}</span>
+                                    ${confidenceIndicator}
+                                </div>
+                                <span class="text-xs text-gray-500">${new Date(entry.timestamp).toLocaleTimeString()}</span>
+                            </div>
+                            <p class="text-sm text-gray-700 leading-relaxed ${entry.speaker === 'System' ? 'italic font-medium' : ''}">${entry.text}</p>
+                        </div>
+                    `;
+                });
+                
+                // Add interim results if speaking
+                if (interimText && this.currentSpeaker) {
+                    const speakerClass = this.currentSpeaker === 'Clinician' ? 'border-blue-300 bg-blue-25' : 'border-green-300 bg-green-25';
+                    const speakerTextClass = this.currentSpeaker === 'Clinician' ? 'text-blue-700' : 'text-green-700';
+                    const iconClass = this.currentSpeaker === 'Clinician' ? 'fas fa-user-md text-blue-600' : 'fas fa-user text-green-600';
+                    
+                    html += `
+                        <div class="border-l-4 ${speakerClass} p-3 rounded-r-lg mb-3 opacity-70">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-2">
+                                    <i class="${iconClass} text-sm"></i>
+                                    <span class="font-semibold text-sm ${speakerTextClass}">${this.currentSpeaker}</span>
+                                    <div class="flex space-x-1">
+                                        <div class="w-1 h-1 bg-current rounded-full animate-pulse"></div>
+                                        <div class="w-1 h-1 bg-current rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
+                                        <div class="w-1 h-1 bg-current rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+                                    </div>
+                                </div>
+                                <span class="text-xs text-gray-400 italic">speaking...</span>
+                            </div>
+                            <p class="text-sm text-gray-600 italic">${interimText}</p>
+                        </div>
+                    `;
+                }
+                
+                if (this.transcript.length > 0 || interimText) {
+                    transcriptArea.innerHTML = html;
+                    transcriptArea.scrollTop = transcriptArea.scrollHeight;
+                }
+            }
+            
+            getConfidenceIndicator(confidence) {
+                let color = 'bg-red-500';
+                let title = 'Low confidence';
+                
+                if (confidence > 0.8) {
+                    color = 'bg-green-500';
+                    title = 'High confidence';
+                } else if (confidence > 0.6) {
+                    color = 'bg-yellow-500';
+                    title = 'Medium confidence';
+                }
+                
+                return `<div class="w-2 h-2 ${color} rounded-full" title="${title} (${Math.round(confidence * 100)}%)"></div>`;
+            }
+            
+            updateRecordingUI() {
+                const clinicianBtn = document.getElementById('clinicianBtn');
+                const patientBtn = document.getElementById('patientBtn');
+                const voiceViz = document.getElementById('voiceViz');
+                const statusIndicator = document.getElementById('statusIndicator');
+                const pauseBtn = document.getElementById('pauseBtn');
+                const stopBtn = document.getElementById('stopBtn');
+                
+                // Reset all states
+                clinicianBtn.classList.remove('pulse-recording');
+                patientBtn.classList.remove('pulse-recording');
+                
+                if (this.isRecording && this.currentSpeaker) {
+                    voiceViz.style.opacity = '1';
+                    statusIndicator.className = 'status-recording';
+                    statusIndicator.innerHTML = `<i class="fas fa-circle text-xs"></i><span>Recording ${this.currentSpeaker}</span>`;
+                    
+                    if (this.currentSpeaker === 'Clinician') {
+                        clinicianBtn.classList.add('pulse-recording');
+                    } else {
+                        patientBtn.classList.add('pulse-recording');
+                    }
+                    
+                    pauseBtn.classList.remove('hidden');
+                    stopBtn.classList.remove('hidden');
+                } else {
+                    voiceViz.style.opacity = '0';
+                    statusIndicator.className = 'status-ready';
+                    statusIndicator.innerHTML = '<i class="fas fa-circle text-xs"></i><span>Ready</span>';
+                    pauseBtn.classList.add('hidden');
+                    stopBtn.classList.add('hidden');
+                }
+            }
+            
+            updateWordCount() {
+                const totalWords = this.transcript.reduce((count, entry) => {
+                    return count + entry.text.split(/\s+/).length;
+                }, 0);
+                
+                const avgConfidence = this.transcript.length > 0 ? 
+                    this.transcript.reduce((sum, entry) => sum + entry.confidence, 0) / this.transcript.length : 0;
+                
+                document.getElementById('wordCount').textContent = `${totalWords} words`;
+                document.getElementById('confidence').textContent = `Confidence: ${Math.round(avgConfidence * 100)}%`;
+            }
+            
+            updateProgress() {
+                const progressFill = document.getElementById('progressFill');
+                const progressPercent = document.getElementById('progressPercent');
+                
+                // Simple progress based on transcript length
+                const progress = Math.min((this.transcript.length / 10) * 100, 100);
+                progressFill.style.width = `${progress}%`;
+                progressPercent.textContent = `${Math.round(progress)}%`;
+            }
+            
+            async generateSOAPNote() {
+                if (this.transcript.length === 0) {
+                    this.showNotification('warning', 'No Data', 'No conversation to analyze. Please record some dialogue first.');
+                    return;
+                }
+                
+                const statusIndicator = document.getElementById('statusIndicator');
+                statusIndicator.className = 'status-processing';
+                statusIndicator.innerHTML = '<i class="fas fa-spinner fa-spin text-xs"></i><span>Generating SOAP...</span>';
+                
+                try {
+                    // Get specialty and quality settings
+                    const specialty = document.querySelector('select').value || 'general';
+                    const quality = document.getElementById('qualityLevel')?.value || 'standard';
+                    
+                    this.showNotification('info', 'AI Processing', 'Analyzing conversation with medical AI...');
+                    
+                    // Convert transcript to conversation text
+                    const conversationText = this.transcript
+                        .map(entry => `${entry.speaker}: ${entry.text}`)
+                        .join('\n');
+                    
+                    // Call AI API
+                    const soapNote = await this.processWithAI(conversationText, specialty, quality);
+                    
+                    // Populate the SOAP note
+                    this.populateSOAPNote(soapNote);
+                    
+                    statusIndicator.className = 'status-ready';
+                    statusIndicator.innerHTML = '<i class="fas fa-check text-xs"></i><span>Complete</span>';
+                    this.showNotification('success', 'SOAP Note Generated', 'AI analysis complete');
+                    
+                    // Update progress to 100%
+                    document.getElementById('progressFill').style.width = '100%';
+                    document.getElementById('progressPercent').textContent = '100%';
+                    
+                } catch (error) {
+                    console.error('SOAP generation error:', error);
+                    statusIndicator.className = 'status-ready';
+                    statusIndicator.innerHTML = '<i class="fas fa-exclamation-triangle text-xs"></i><span>Error</span>';
+                    this.showNotification('error', 'Generation Failed', 'AI processing failed. Please check your API configuration.');
+                    
+                    // Fallback to mock data for demo
+                    this.populateMockSOAPNote();
+                }
+            }
+            
+            async processWithAI(conversationText, specialty, quality) {
+                const specialtyPrompts = {
+                    general: 'general internal medicine',
+                    cardiology: 'cardiology with focus on cardiovascular conditions',
+                    pediatrics: 'pediatrics with age-appropriate considerations',
+                    psychiatry: 'psychiatry with mental health focus',
+                    emergency: 'emergency medicine with acute care focus'
+                };
+                
+                const qualityPrompts = {
+                    fast: 'Provide a concise but complete SOAP note with essential details.',
+                    standard: 'Provide a comprehensive SOAP note with appropriate clinical detail and reasoning.',
+                    high: 'Provide a detailed, thorough SOAP note with extensive clinical reasoning and specialty-specific considerations.'
+                };
+                
+                const specialtyContext = specialtyPrompts[specialty] || specialtyPrompts.general;
+                const qualityPrompt = qualityPrompts[quality] || qualityPrompts.standard;
+                
+                const prompt = `
+                    You are an expert ${specialtyContext} physician. Analyze this doctor-patient conversation and create a comprehensive SOAP note.
+                    
+                    ${qualityPrompt}
+                    
+                    IMPORTANT: Return ONLY a valid JSON object with the following exact structure (no additional text, explanations, or markdown):
+                    
+                    {
+                        "patientInfo": {
+                            "name": "extracted or 'Patient Name'",
+                            "dob": "extracted or 'MM/DD/YYYY'",
+                            "mrn": "extracted or 'MRN'"
+                        },
+                        "subjective": {
+                            "chiefComplaint": "patient's main concern in their words",
+                            "presentIllness": "detailed history of current symptoms with timeline, quality, severity",
+                            "reviewSystems": "systematic review organized by body systems",
+                            "pastMedicalHistory": "relevant past medical conditions, surgeries, hospitalizations"
+                        },
+                        "objective": {
+                            "vitalSigns": "blood pressure, heart rate, temperature, respiratory rate if mentioned",
+                            "physicalExam": "detailed physical examination findings organized by body systems",
+                            "diagnosticResults": "laboratory results, imaging studies, other diagnostic tests mentioned"
+                        },
+                        "assessment": {
+                            "primaryDiagnosis": "most likely diagnosis with ICD-10 code if applicable",
+                            "differentialDx": "other possible diagnoses to consider",
+                            "clinicalImpression": "clinical reasoning and overall assessment"
+                        },
+                        "plan": {
+                            "medications": "prescribed medications with dosages, frequencies, and durations",
+                            "procedures": "procedures ordered or performed",
+                            "followUp": "follow-up appointments and monitoring plans",
+                            "patientEducation": "education provided and lifestyle recommendations"
+                        }
+                    }
+                    
+                    Conversation transcript:
+                    ${conversationText}
+                `;
+                
+                try {
+                    // Try primary AI provider (OpenAI)
+                    return await this.callOpenAI(this.aiConfig.primary.apiKey, prompt, this.aiConfig.primary.model);
+                } catch (error) {
+                    console.warn('Primary AI provider failed, trying fallback:', error);
+                    try {
+                        // Try fallback provider (Anthropic)
+                        return await this.callAnthropic(this.aiConfig.fallback.apiKey, prompt, this.aiConfig.fallback.model);
+                    } catch (fallbackError) {
+                        console.error('Both AI providers failed:', fallbackError);
+                        throw new Error('All AI providers failed');
+                    }
+                }
+            }
+            
+            async callOpenAI(apiKey, prompt, model = 'gpt-4') {
+                if (!apiKey || apiKey === 'your-openai-api-key-here') {
+                    throw new Error('OpenAI API key not configured');
+                }
+                
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: this.aiConfig.settings.temperature,
+                        max_tokens: this.aiConfig.settings.maxTokens
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`OpenAI API error: ${response.status} - ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                return data.choices[0].message.content;
+            }
+            
+            async callAnthropic(apiKey, prompt, model = 'claude-3-sonnet-20240229') {
+                if (!apiKey || apiKey === 'your-anthropic-api-key-here') {
+                    throw new Error('Anthropic API key not configured');
+                }
+                
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        max_tokens: this.aiConfig.settings.maxTokens,
+                        messages: [{ role: 'user', content: prompt }]
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Anthropic API error: ${response.status} - ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                return data.content[0].text;
+            }
+            
+            populateSOAPNote(soapText) {
+                try {
+                    // Extract JSON from response
+                    const jsonMatch = soapText.match(/\{[\s\S]*\}/);
+                    if (!jsonMatch) {
+                        throw new Error('No valid JSON found in AI response');
+                    }
+                    
+                    const soapData = JSON.parse(jsonMatch[0]);
+                    
+                    // Populate patient information
+                    if (soapData.patientInfo) {
+                        this.setFieldContent('patientName', soapData.patientInfo.name);
+                        this.setFieldContent('patientDOB', soapData.patientInfo.dob);
+                        this.setFieldContent('patientMRN', soapData.patientInfo.mrn);
+                    }
+                    
+                    // Populate SOAP sections
+                    if (soapData.subjective) {
+                        this.setFieldContent('chiefComplaint', soapData.subjective.chiefComplaint);
+                        this.setFieldContent('presentIllness', soapData.subjective.presentIllness);
+                        this.setFieldContent('reviewSystems', soapData.subjective.reviewSystems);
+                        this.setFieldContent('pastMedicalHistory', soapData.subjective.pastMedicalHistory);
+                    }
+                    
+                    if (soapData.objective) {
+                        this.setFieldContent('vitalSigns', soapData.objective.vitalSigns);
+                        this.setFieldContent('physicalExam', soapData.objective.physicalExam);
+                        this.setFieldContent('diagnosticResults', soapData.objective.diagnosticResults);
+                    }
+                    
+                    if (soapData.assessment) {
+                        this.setFieldContent('primaryDiagnosis', soapData.assessment.primaryDiagnosis);
+                        this.setFieldContent('differentialDx', soapData.assessment.differentialDx);
+                        this.setFieldContent('clinicalImpression', soapData.assessment.clinicalImpression);
+                    }
+                    
+                    if (soapData.plan) {
+                        this.setFieldContent('medications', soapData.plan.medications);
+                        this.setFieldContent('procedures', soapData.plan.procedures);
+                        this.setFieldContent('followUp', soapData.plan.followUp);
+                        this.setFieldContent('patientEducation', soapData.plan.patientEducation);
+                    }
+                    
+                    this.showNotification('success', 'SOAP Note Populated', 'All sections updated with AI analysis');
+                    
+                } catch (error) {
+                    console.error('Error populating SOAP note:', error);
+                    this.showNotification('error', 'Parse Error', 'Failed to parse AI response');
+                    // Fallback to mock data
+                    this.populateMockSOAPNote();
+                }
+            }
+            
+            setFieldContent(fieldId, content) {
+                const field = document.querySelector(`[contenteditable="true"]`);
+                if (field && content) {
+                    // For demo, we'll just update the first editable field
+                    // In a real implementation, you'd target specific fields by ID
+                    field.textContent = content;
+                }
+            }
+            
+            populateMockSOAPNote() {
+                // This would normally call your AI API, but for demo we'll populate with sample data
+                const conversationText = this.transcript.map(entry => `${entry.speaker}: ${entry.text}`).join('\n');
+                
+                // Update SOAP sections with generated content
+                document.querySelector('[contenteditable="true"]').textContent = 'Patient presents with chest discomfort and shortness of breath for the past 2 days.';
+                
+                // Update progress to 100%
+                document.getElementById('progressFill').style.width = '100%';
+                document.getElementById('progressPercent').textContent = '100%';
+            }
+            
+            handleRecognitionError(event) {
+                console.error('Speech recognition error:', event.error);
+                let message = 'Speech recognition error occurred';
+                
+                switch (event.error) {
+                    case 'no-speech':
+                        return; // Don't show notification for this
+                    case 'audio-capture':
+                        message = 'Microphone not accessible. Please check permissions.';
+                        break;
+                    case 'not-allowed':
+                        message = 'Microphone permission denied. Please allow microphone access.';
+                        break;
+                    case 'network':
+                        message = 'Network error occurred during recognition.';
+                        break;
+                    default:
+                        message = `Recognition error: ${event.error}`;
+                }
+                
+                this.showNotification('error', 'Recognition Error', message);
+                this.stopRecording();
+            }
+            
+            startNewSession() {
+                if (this.transcript.length > 0) {
+                    if (!confirm('Start a new session? This will clear the current transcript and SOAP note. Are you sure?')) {
+                        return;
+                    }
+                }
+                
+                // Reset all data
+                this.transcript = [];
+                this.sessionStartTime = new Date();
+                
+                // Stop any recording
+                this.stopRecording();
+                
+                // Clear transcript display
+                const transcriptArea = document.getElementById('transcriptArea');
+                transcriptArea.innerHTML = `
+                    <div class="text-center text-gray-500 py-12">
+                        <i class="fas fa-microphone-slash text-3xl mb-4 opacity-50"></i>
+                        <p class="text-sm">Start recording to see live transcript</p>
+                    </div>
+                `;
+                
+                // Clear SOAP note
+                this.clearSOAPNoteQuiet();
+                
+                // Reset progress
+                document.getElementById('progressFill').style.width = '0%';
+                document.getElementById('progressPercent').textContent = '0%';
+                
+                // Update word count
+                document.getElementById('wordCount').textContent = '0 words';
+                document.getElementById('confidence').textContent = 'Confidence: --';
+                
+                this.showNotification('success', 'New Session Started', 'Ready to begin a new medical documentation session');
+            }
+            
+            showTemplatesModal() {
+                const modal = document.getElementById('templatesModal');
+                const grid = document.getElementById('templatesGrid');
+                
+                // Define medical templates
+                const templates = [
+                    {
+                        name: 'Annual Physical',
+                        specialty: 'General Medicine',
+                        description: 'Routine annual examination template',
+                        icon: 'fas fa-heartbeat',
+                        color: 'blue',
+                        data: {
+                            chiefComplaint: 'Annual physical examination',
+                            presentIllness: 'Patient presents for routine annual physical examination. Reports feeling well overall with no acute complaints.',
+                            vitalSigns: 'BP: ___/___  HR: ___  RR: ___  Temp: ___°F  O2 Sat: ___%',
+                            primaryDiagnosis: 'Z00.00 - Encounter for general adult medical examination without abnormal findings'
+                        }
+                    },
+                    {
+                        name: 'Chest Pain Evaluation',
+                        specialty: 'Cardiology',
+                        description: 'Comprehensive chest pain assessment',
+                        icon: 'fas fa-heart',
+                        color: 'red',
+                        data: {
+                            chiefComplaint: 'Chest pain',
+                            presentIllness: 'Patient presents with chest pain. Onset: [sudden vs gradual], Duration: [time], Location: [substernal/left-sided], Quality: [sharp/dull/pressure], Severity: [1-10 scale]',
+                            vitalSigns: 'BP: ___/___  HR: ___  RR: ___  O2 Sat: ___%  Pain: ___/10',
+                            primaryDiagnosis: 'R07.89 - Other chest pain'
+                        }
+                    },
+                    {
+                        name: 'Pediatric Well Visit',
+                        specialty: 'Pediatrics',
+                        description: 'Well child examination template',
+                        icon: 'fas fa-baby',
+                        color: 'green',
+                        data: {
+                            chiefComplaint: 'Well child visit',
+                            presentIllness: 'Child presents for routine well child examination. Parent reports child is doing well with normal growth and development.',
+                            vitalSigns: 'Weight: ___ kg (___percentile), Height: ___ cm (___percentile), HC: ___ cm',
+                            primaryDiagnosis: 'Z00.129 - Encounter for routine child health examination without abnormal findings'
+                        }
+                    },
+                    {
+                        name: 'Mental Health Assessment',
+                        specialty: 'Psychiatry',
+                        description: 'Basic mental health evaluation',
+                        icon: 'fas fa-brain',
+                        color: 'purple',
+                        data: {
+                            chiefComplaint: 'Mental health evaluation',
+                            presentIllness: 'Patient presents for mental health evaluation. Mood: [current state], Duration: [timeline], Sleep: [patterns], Appetite: [changes], Energy: [levels]',
+                            vitalSigns: 'BP: ___/___  HR: ___  Mental Status: Alert and oriented x3',
+                            primaryDiagnosis: 'F32.9 - Major depressive disorder, single episode, unspecified'
+                        }
+                    },
+                    {
+                        name: 'Hypertension Follow-up',
+                        specialty: 'Internal Medicine',
+                        description: 'HTN management visit',
+                        icon: 'fas fa-tachometer-alt',
+                        color: 'orange',
+                        data: {
+                            chiefComplaint: 'Hypertension follow-up',
+                            presentIllness: 'Patient returns for hypertension management. Reports compliance with medications and lifestyle modifications.',
+                            vitalSigns: 'BP: ___/___  HR: ___  Weight: ___ lbs',
+                            primaryDiagnosis: 'I10 - Essential hypertension'
+                        }
+                    },
+                    {
+                        name: 'Diabetes Management',
+                        specialty: 'Endocrinology',
+                        description: 'Diabetes mellitus follow-up',
+                        icon: 'fas fa-syringe',
+                        color: 'indigo',
+                        data: {
+                            chiefComplaint: 'Diabetes follow-up',
+                            presentIllness: 'Patient with Type 2 diabetes mellitus returns for routine management and glucose control assessment.',
+                            vitalSigns: 'BP: ___/___  HR: ___  Weight: ___ lbs  Glucose: ___ mg/dL',
+                            primaryDiagnosis: 'E11.9 - Type 2 diabetes mellitus without complications'
+                        }
+                    }
+                ];
+                
+                // Populate template grid
+                grid.innerHTML = templates.map((template, index) => `
+                    <div class="template-card bg-white border-2 border-gray-200 hover:border-${template.color}-300 rounded-xl p-4 cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105" data-template-index="${index}">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 bg-${template.color}-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="${template.icon} text-${template.color}-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-sm">${template.name}</h4>
+                                <p class="text-xs text-gray-600">${template.specialty}</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500">${template.description}</p>
+                        <div class="mt-3 pt-3 border-t border-gray-100">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs text-gray-500">Click to apply</span>
+                                <i class="fas fa-arrow-right text-${template.color}-500 text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Add click event listeners to template cards
+                const templateCards = grid.querySelectorAll('.template-card');
+                templateCards.forEach((card, index) => {
+                    card.addEventListener('click', () => {
+                        // Add visual feedback
+                        card.classList.add('animate-pulse');
+                        setTimeout(() => card.classList.remove('animate-pulse'), 500);
+                        
+                        this.loadTemplate(templates[index]);
+                    });
+                });
+                
+                modal.classList.remove('hidden');
+            }
+            
+            hideTemplatesModal() {
+                document.getElementById('templatesModal').classList.add('hidden');
+            }
+            
+            loadTemplate(template) {
+                // Show loading feedback
+                this.showNotification('info', 'Loading Template', `Applying ${template.name} template...`);
+                
+                // Update specialty selector
+                const specialtySelect = document.getElementById('specialtySelect');
+                if (specialtySelect) {
+                    const specialtyMap = {
+                        'General Medicine': 'general',
+                        'Cardiology': 'cardiology',
+                        'Pediatrics': 'pediatrics',
+                        'Psychiatry': 'psychiatry',
+                        'Internal Medicine': 'general',
+                        'Endocrinology': 'endocrinology'
+                    };
+                    const specialtyValue = specialtyMap[template.specialty];
+                    if (specialtyValue) {
+                        specialtySelect.value = specialtyValue;
+                        // Trigger specialty change to update UI
+                        this.onSpecialtyChange(specialtyValue);
+                        
+                        // Visual feedback for specialty change
+                        specialtySelect.style.borderColor = '#3b82f6';
+                        specialtySelect.style.backgroundColor = '#dbeafe';
+                        setTimeout(() => {
+                            specialtySelect.style.borderColor = '';
+                            specialtySelect.style.backgroundColor = '';
+                        }, 2000);
+                    }
+                }
+                
+                // Populate specific SOAP fields by finding editable elements in order
+                const editableFields = document.querySelectorAll('[contenteditable="true"]');
+                
+                // Apply template data with animation
+                setTimeout(() => {
+                    if (editableFields.length >= 16) {
+                        // Patient info (keep generic for templates)
+                        editableFields[0].textContent = 'Patient Name';
+                        editableFields[1].textContent = 'MM/DD/YYYY';
+                        editableFields[2].textContent = 'MRN-123456';
+                        
+                        // SOAP content from template
+                        if (template.data.chiefComplaint) {
+                            editableFields[3].textContent = template.data.chiefComplaint;
+                            this.animateFieldUpdate(editableFields[3]);
+                        }
+                        
+                        if (template.data.presentIllness) {
+                            editableFields[4].textContent = template.data.presentIllness;
+                            this.animateFieldUpdate(editableFields[4]);
+                        }
+                        
+                        // Specialty-specific ROS
+                        const rosContent = this.getSpecialtySpecificContent(template.specialty, 'ros');
+                        editableFields[5].textContent = rosContent;
+                        this.animateFieldUpdate(editableFields[5]);
+                        
+                        if (template.data.vitalSigns) {
+                            editableFields[6].textContent = template.data.vitalSigns;
+                            this.animateFieldUpdate(editableFields[6]);
+                        }
+                        
+                        // Specialty-specific physical exam
+                        const examContent = this.getSpecialtySpecificContent(template.specialty, 'exam');
+                        editableFields[7].textContent = examContent;
+                        this.animateFieldUpdate(editableFields[7]);
+                        
+                        // Default diagnostic
+                        editableFields[8].textContent = 'Laboratory and imaging studies as clinically indicated';
+                        this.animateFieldUpdate(editableFields[8]);
+                        
+                        if (template.data.primaryDiagnosis) {
+                            editableFields[9].textContent = template.data.primaryDiagnosis;
+                            this.animateFieldUpdate(editableFields[9]);
+                        }
+                        
+                        // Specialty-specific differential
+                        const diffContent = this.getSpecialtySpecificContent(template.specialty, 'differential');
+                        editableFields[10].textContent = diffContent;
+                        this.animateFieldUpdate(editableFields[10]);
+                        
+                        // Default impression
+                        editableFields[11].textContent = `${template.specialty} evaluation completed as outlined above`;
+                        this.animateFieldUpdate(editableFields[11]);
+                        
+                        // Specialty-specific plan sections
+                        const medContent = this.getSpecialtySpecificContent(template.specialty, 'medications');
+                        editableFields[12].textContent = medContent;
+                        
+                        editableFields[13].textContent = 'Procedures and interventions as indicated';
+                        editableFields[14].textContent = 'Follow-up as recommended for condition management';
+                        editableFields[15].textContent = 'Patient education provided regarding condition and treatment plan';
+                        
+                        // Animate the last few fields
+                        [12, 13, 14, 15].forEach(index => {
+                            this.animateFieldUpdate(editableFields[index]);
+                        });
+                    }
+                }, 300);
+                
+                this.hideTemplatesModal();
+                
+                // Show success notification after brief delay
+                setTimeout(() => {
+                    this.showNotification('success', 'Template Applied', `${template.name} template loaded for ${template.specialty}`);
+                    this.updateProgress();
+                }, 800);
+            }
+            
+            getSpecialtySpecificContent(specialty, section) {
+                const specialtyContent = {
+                    'Cardiology': {
+                        ros: 'Cardiovascular: Chest pain, palpitations, dyspnea, orthopnea, PND, lower extremity edema as per HPI. All other systems negative.',
+                        exam: 'Cardiovascular: Rate, rhythm, heart sounds, murmurs, peripheral pulses, JVD assessment. Respiratory: Breath sounds, signs of CHF.',
+                        differential: 'Coronary artery disease, heart failure, arrhythmias, valvular disease',
+                        medications: 'Cardiac medications as appropriate: ACE inhibitors, beta-blockers, statins, antiplatelet therapy'
+                    },
+                    'Pediatrics': {
+                        ros: 'Constitutional: Fever, appetite, energy level. Growth/Development: Meeting milestones. Behavioral: Age-appropriate responses.',
+                        exam: 'General: Growth parameters plotted. Developmental: Age-appropriate milestones assessed. Complete pediatric examination.',
+                        differential: 'Age-appropriate differential diagnoses considered',
+                        medications: 'Pediatric dosing and age-appropriate medications as indicated'
+                    },
+                    'Psychiatry': {
+                        ros: 'Psychiatric: Mood, anxiety, sleep patterns, appetite, concentration, suicidal ideation. Substance use reviewed.',
+                        exam: 'Mental Status: Appearance, behavior, speech, mood, affect, thought process/content, perceptions, cognition, insight, judgment.',
+                        differential: 'Mood disorders, anxiety disorders, adjustment disorders, substance use disorders',
+                        medications: 'Psychotropic medications as appropriate with consideration of side effects and monitoring'
+                    },
+                    'General Medicine': {
+                        ros: 'Review of systems negative except as noted in HPI. Constitutional, cardiovascular, respiratory, GI, GU, musculoskeletal, neurological, psychiatric systems reviewed.',
+                        exam: 'General: Well-appearing. HEENT, cardiovascular, respiratory, abdominal, extremity, neurological examination as appropriate.',
+                        differential: 'Differential diagnoses based on clinical presentation and examination findings',
+                        medications: 'Medications as clinically appropriate with attention to drug interactions and contraindications'
+                    }
+                };
+                
+                const content = specialtyContent[specialty] || specialtyContent['General Medicine'];
+                return content[section] || 'Content appropriate for specialty evaluation';
+            }
+            
+            onSpecialtyChange(specialty) {
+                // Update the specialty display in the SOAP note header
+                const specialtyNames = {
+                    'general': 'General Medicine',
+                    'cardiology': 'Cardiology',
+                    'pediatrics': 'Pediatrics',
+                    'psychiatry': 'Psychiatry',
+                    'orthopedics': 'Orthopedics',
+                    'dermatology': 'Dermatology',
+                    'neurology': 'Neurology',
+                    'emergency': 'Emergency Medicine',
+                    'oncology': 'Oncology',
+                    'endocrinology': 'Endocrinology'
+                };
+                
+                const displayName = specialtyNames[specialty] || 'General Medicine';
+                
+                // Update the specialty badge in the SOAP header
+                const specialtyBadge = document.getElementById('specialtyBadge');
+                if (specialtyBadge) {
+                    specialtyBadge.textContent = displayName;
+                    // Add a subtle animation
+                    specialtyBadge.style.transform = 'scale(1.1)';
+                    specialtyBadge.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
+                    setTimeout(() => {
+                        specialtyBadge.style.transform = 'scale(1)';
+                        specialtyBadge.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                    }, 300);
+                }
+                
+                // Show notification of specialty change
+                this.showNotification('info', 'Specialty Updated', `Documentation mode set to ${displayName}`);
+                
+                // Store current specialty for AI processing
+                this.currentSpecialty = specialty;
+                
+                // Update AI processing context
+                this.updateAIProcessingContext(displayName);
+            }
+            
+            updateAIProcessingContext(specialtyName) {
+                // Update the AI processing panel to show current specialty context
+                const aiPanels = document.querySelectorAll('p');
+                aiPanels.forEach(panel => {
+                    if (panel.textContent && panel.textContent.includes('GPT-4 Medical AI')) {
+                        panel.textContent = `GPT-4 Medical AI - ${specialtyName} Specialist`;
+                    }
+                });
+            }
+            
+            animateFieldUpdate(field) {
+                if (field) {
+                    field.style.borderColor = '#10b981';
+                    field.style.borderStyle = 'solid';
+                    field.style.backgroundColor = '#ecfdf5';
+                    field.classList.add('animate-pulse');
+                    
+                    setTimeout(() => {
+                        field.classList.remove('animate-pulse');
+                        field.style.backgroundColor = '';
+                        setTimeout(() => {
+                            field.style.borderStyle = 'dashed';
+                            field.style.borderColor = '#e5e7eb';
+                        }, 1000);
+                    }, 1000);
+                }
+            }
+            
+            clearSOAPNoteQuiet() {
+                // Clear without confirmation (for new session)
+                document.querySelectorAll('[contenteditable="true"]').forEach(field => {
+                    if (field.textContent.includes('Patient Name')) field.textContent = 'Patient Name';
+                    else if (field.textContent.includes('MM/DD/YYYY')) field.textContent = 'MM/DD/YYYY';
+                    else if (field.textContent.includes('MRN')) field.textContent = 'MRN-123456';
+                    else field.textContent = 'Content will appear here...';
+                });
+            }
+            
+            showSettingsModal() {
+                document.getElementById('settingsModal').classList.remove('hidden');
+            }
+            
+            hideSettingsModal() {
+                document.getElementById('settingsModal').classList.add('hidden');
+            }
+            
+            saveSettings() {
+                this.showNotification('success', 'Settings Saved', 'Your preferences have been updated');
+                this.hideSettingsModal();
+            }
+            
+            resetSettings() {
+                document.getElementById('confidenceSlider').value = 70;
+                document.getElementById('confidenceValue').textContent = '70%';
+                this.confidenceThreshold = 0.7;
+                this.showNotification('info', 'Settings Reset', 'All settings restored to defaults');
+            }
+            
+            showAIModal() {
+                document.getElementById('aiModal').classList.remove('hidden');
+            }
+            
+            hideAIModal() {
+                document.getElementById('aiModal').classList.add('hidden');
+            }
+            
+            startSessionTimer() {
+                setInterval(() => {
+                    const elapsed = Math.floor((new Date() - this.sessionStartTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    document.getElementById('sessionTime').textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+            
+            updateCurrentDate() {
+                document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+            
+            showWelcomeNotification() {
+                setTimeout(() => {
+                    this.showNotification('info', 'MedScript Pro Ready', 'Click on Clinician or Patient to start voice recording');
+                    
+                    // Force update specialty display after page load
+                    const specialtySelect = document.getElementById('specialtySelect');
+                    if (specialtySelect) {
+                        this.onSpecialtyChange(specialtySelect.value);
+                    }
+                }, 1000);
+            }
+            
+            showNotification(type, title, message) {
+                const notification = document.getElementById('notification');
+                const icon = document.getElementById('notificationIcon');
+                const titleEl = document.getElementById('notificationTitle');
+                const messageEl = document.getElementById('notificationMessage');
+                
+                const icons = {
+                    success: '<i class="fas fa-check text-white"></i>',
+                    error: '<i class="fas fa-exclamation-circle text-white"></i>',
+                    warning: '<i class="fas fa-exclamation-triangle text-white"></i>',
+                    info: '<i class="fas fa-info-circle text-white"></i>'
+                };
+                
+                const colors = {
+                    success: 'bg-green-500',
+                    error: 'bg-red-500',
+                    warning: 'bg-yellow-500',
+                    info: 'bg-blue-500'
+                };
+                
+                icon.className = `w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${colors[type]}`;
+                icon.innerHTML = icons[type];
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 5000);
+            }
+        }
+        
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            window.medScriptPro = new MedScriptPro();
+        });
+    </script>
+</body>
+</html>
