@@ -438,10 +438,10 @@
                         
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Processing Quality</label>
-                            <select class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option>Standard (Recommended)</option>
-                                <option>High Quality (Detailed)</option>
-                                <option>Fast (Basic)</option>
+                            <select id="qualityLevel" class="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="standard" selected>Standard (Recommended)</option>
+                                <option value="high">High Quality (Detailed)</option>
+                                <option value="fast">Fast (Basic)</option>
                             </select>
                         </div>
                         
@@ -1031,33 +1031,47 @@
             }
             
             setupEventListeners() {
-                document.getElementById('clinicianBtn').addEventListener('click', () => this.toggleRecording('Clinician'));
-                document.getElementById('patientBtn').addEventListener('click', () => this.toggleRecording('Patient'));
-                document.getElementById('pauseBtn').addEventListener('click', () => this.pauseRecording());
-                document.getElementById('stopBtn').addEventListener('click', () => this.stopRecording());
-                document.getElementById('generateBtn').addEventListener('click', () => this.generateSOAPNote());
-                document.getElementById('closeAiModal').addEventListener('click', () => this.hideAIModal());
+                // Helper function to safely add event listeners
+                const safeAddListener = (id, event, handler) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener(event, handler);
+                    } else {
+                        console.warn(`Element with id '${id}' not found`);
+                    }
+                };
+
+                // Recording controls
+                safeAddListener('clinicianBtn', 'click', () => this.toggleRecording('Clinician'));
+                safeAddListener('patientBtn', 'click', () => this.toggleRecording('Patient'));
+                safeAddListener('pauseBtn', 'click', () => this.pauseRecording());
+                safeAddListener('stopBtn', 'click', () => this.stopRecording());
+                safeAddListener('generateBtn', 'click', () => this.generateSOAPNote());
                 
                 // Quick Action buttons
-                document.getElementById('newSessionBtn').addEventListener('click', () => this.startNewSession());
-                document.getElementById('templatesBtn').addEventListener('click', () => this.showTemplatesModal());
-                document.getElementById('aiAssistBtn').addEventListener('click', () => this.showAIModal());
+                safeAddListener('newSessionBtn', 'click', () => this.startNewSession());
+                safeAddListener('templatesBtn', 'click', () => this.showTemplatesModal());
+                safeAddListener('aiAssistBtn', 'click', () => this.showAIModal());
                 
                 // Modal close buttons
-                document.getElementById('closeTemplatesModal').addEventListener('click', () => this.hideTemplatesModal());
+                safeAddListener('closeTemplatesModal', 'click', () => this.hideTemplatesModal());
+                safeAddListener('closeAiModal', 'click', () => this.hideAIModal());
                 
                 // Specialty selector
-                document.getElementById('specialtySelect').addEventListener('change', (e) => this.onSpecialtyChange(e.target.value));
+                safeAddListener('specialtySelect', 'change', (e) => this.onSpecialtyChange(e.target.value));
                 
                 // Settings modal
-                document.getElementById('settingsBtn').addEventListener('click', () => this.showSettingsModal());
-                document.getElementById('closeSettingsModal').addEventListener('click', () => this.hideSettingsModal());
-                document.getElementById('saveSettings').addEventListener('click', () => this.saveSettings());
-                document.getElementById('resetSettings').addEventListener('click', () => this.resetSettings());
+                safeAddListener('settingsBtn', 'click', () => this.showSettingsModal());
+                safeAddListener('closeSettingsModal', 'click', () => this.hideSettingsModal());
+                safeAddListener('saveSettings', 'click', () => this.saveSettings());
+                safeAddListener('resetSettings', 'click', () => this.resetSettings());
                 
                 // Settings controls
-                document.getElementById('confidenceSlider').addEventListener('input', (e) => {
-                    document.getElementById('confidenceValue').textContent = e.target.value + '%';
+                safeAddListener('confidenceSlider', 'input', (e) => {
+                    const valueElement = document.getElementById('confidenceValue');
+                    if (valueElement) {
+                        valueElement.textContent = e.target.value + '%';
+                    }
                     this.confidenceThreshold = e.target.value / 100;
                 });
                 
@@ -1068,7 +1082,14 @@
             }
             
             initializeSpeechRecognition() {
-                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                // Check if speech recognition is available
+                if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                    console.error('Speech recognition not supported in this browser');
+                    this.showSpeechError('Browser not supported. Please use Chrome, Safari, or Edge.');
+                    return;
+                }
+
+                try {
                     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                     this.recognition = new SpeechRecognition();
                     
@@ -1078,6 +1099,7 @@
                     this.recognition.maxAlternatives = 3;
                     
                     this.recognition.onstart = () => {
+                        console.log('Speech recognition started');
                         this.isRecording = true;
                         this.updateRecordingUI();
                         this.showNotification('success', 'Recording Started', `Now recording ${this.currentSpeaker}`);
@@ -1088,22 +1110,74 @@
                     };
                     
                     this.recognition.onend = () => {
+                        console.log('Speech recognition ended');
                         if (this.isRecording && this.currentSpeaker) {
                             // Restart recognition if we're still supposed to be recording
                             setTimeout(() => {
                                 if (this.isRecording) {
-                                    this.recognition.start();
+                                    try {
+                                        this.recognition.start();
+                                    } catch (e) {
+                                        console.error('Failed to restart recognition:', e);
+                                        this.handleRecognitionError({ error: 'restart-failed' });
+                                    }
                                 }
                             }, 100);
                         }
                     };
                     
                     this.recognition.onerror = (event) => {
+                        console.error('Speech recognition error:', event);
                         this.handleRecognitionError(event);
                     };
-                } else {
-                    this.showNotification('error', 'Not Supported', 'Speech recognition not supported in this browser. Please use Chrome, Safari, or Edge.');
+                    
+                    // Test speech recognition availability
+                    this.testSpeechRecognition();
+                    
+                } catch (error) {
+                    console.error('Error initializing speech recognition:', error);
+                    this.showSpeechError('Failed to initialize speech recognition: ' + error.message);
                 }
+            }
+            
+            testSpeechRecognition() {
+                try {
+                    // Try to create a test recognition instance
+                    const testRecognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                    console.log('Speech recognition test successful');
+                    this.showNotification('success', 'Speech Recognition Ready', 'Microphone access will be requested when you start recording');
+                } catch (error) {
+                    console.error('Speech recognition test failed:', error);
+                    this.showSpeechError('Speech recognition test failed: ' + error.message);
+                }
+            }
+            
+            showSpeechError(message) {
+                // Update the UI to show speech recognition is not available
+                const statusIndicator = document.getElementById('statusIndicator');
+                statusIndicator.className = 'status-indicator bg-red-100 text-red-800';
+                statusIndicator.innerHTML = '<i class="fas fa-exclamation-triangle text-xs"></i><span>Speech Unavailable</span>';
+                
+                // Update voice recording panel
+                const voicePanel = document.querySelector('.bg-gradient-to-br.from-blue-50');
+                if (voicePanel) {
+                    voicePanel.innerHTML = `
+                        <div class="text-center p-6">
+                            <i class="fas fa-microphone-slash text-4xl text-red-500 mb-4"></i>
+                            <h3 class="font-bold text-red-800 mb-2">Speech Recognition Unavailable</h3>
+                            <p class="text-sm text-red-600 mb-4">${message}</p>
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">
+                                <strong>Solutions:</strong><br>
+                                • Use Chrome, Safari, or Edge browser<br>
+                                • Ensure you're on HTTPS (not HTTP)<br>
+                                • Allow microphone permissions<br>
+                                • Try refreshing the page
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                this.showNotification('error', 'Speech Recognition Error', message);
             }
             
             toggleRecording(speaker) {
@@ -1688,27 +1762,45 @@
             }
             
             handleRecognitionError(event) {
-                console.error('Speech recognition error:', event.error);
+                console.error('Speech recognition error details:', event);
                 let message = 'Speech recognition error occurred';
+                let solution = '';
                 
                 switch (event.error) {
                     case 'no-speech':
                         return; // Don't show notification for this
                     case 'audio-capture':
-                        message = 'Microphone not accessible. Please check permissions.';
+                        message = 'Microphone not accessible';
+                        solution = 'Check if microphone is connected and try refreshing the page';
                         break;
                     case 'not-allowed':
-                        message = 'Microphone permission denied. Please allow microphone access.';
+                        message = 'Microphone permission denied';
+                        solution = 'Click the microphone icon in your address bar and allow access';
                         break;
                     case 'network':
-                        message = 'Network error occurred during recognition.';
+                        message = 'Network error during recognition';
+                        solution = 'Check your internet connection and try again';
+                        break;
+                    case 'service-not-allowed':
+                        message = 'Speech service not allowed';
+                        solution = 'Try using HTTPS instead of HTTP, or switch to Chrome browser';
+                        break;
+                    case 'restart-failed':
+                        message = 'Failed to restart speech recognition';
+                        solution = 'Try clicking the speaker button again to restart';
                         break;
                     default:
                         message = `Recognition error: ${event.error}`;
+                        solution = 'Try refreshing the page or switching to Chrome browser';
                 }
                 
-                this.showNotification('error', 'Recognition Error', message);
+                this.showNotification('error', 'Recognition Error', message + (solution ? '. ' + solution : ''));
                 this.stopRecording();
+                
+                // Show detailed error in status
+                const statusIndicator = document.getElementById('statusIndicator');
+                statusIndicator.className = 'status-indicator bg-red-100 text-red-800';
+                statusIndicator.innerHTML = '<i class="fas fa-exclamation-triangle text-xs"></i><span>Error</span>';
             }
             
             startNewSession() {
